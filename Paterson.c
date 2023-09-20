@@ -1,14 +1,12 @@
 #include <stdio.h>
 #include <stdatomic.h>
 
-#define NUM_THREADS 2
-
 void critical_section(){
     printf("AAAAAAAAAAAAAAAAAAAA\n");
 }
 
 struct lock {
-    atomic_int flag[NUM_THREADS];
+    atomic_int flag[2];
     atomic_int turn;
 };
 
