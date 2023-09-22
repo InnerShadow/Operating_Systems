@@ -6,38 +6,29 @@ void critical_section(){
 }
 
 struct lock {
-    atomic_int flag[2]; 
+    atomic_int flag[2];
+    atomic_int turn;
 };
 
-void lock_init(struct lock *lock){
-    atomic_store(&lock->flag[0], 0);
-    atomic_store(&lock->flag[1], 0);
+void acquire_lock(struct lock *my_lock, int thread_id){
+    atomic_store(&my_lock->flag[thread_id], 1);
+    atomic_store(&my_lock->turn, thread_id);
+
+    while (atomic_load(&my_lock->flag[1 - thread_id]) && atomic_load(&my_lock->turn) == thread_id) {}
 }
 
-void lock(struct lock *lock, int threadId){
-    const int me = threadId;
-    const int other = 1 - me;
-
-    atomic_store(&lock->flag[me], 1);
-    while (atomic_load(&lock->flag[other])){}
-}
-
-void unlock(struct lock *lock, int threadId){
-    const int me = threadId;
-    atomic_store(&lock->flag[me], 0);
+void release_lock(struct lock *my_lock, int thread_id){
+    atomic_store(&my_lock->flag[thread_id], 0);
 }
 
 int main(void){
-    struct lock my_lock;
-    lock_init(&my_lock);
+    struct lock my_lock = { {0, 0}, -1 };
 
-    int threadId = 0;
+    int thread_id = 0;
 
-    lock(&my_lock, threadId);
+    acquire_lock(&my_lock, thread_id);
     critical_section();
-    unlock(&my_lock, threadId);
-    
+    release_lock(&my_lock, thread_id);
+
     return 0;
 }
-
-
