@@ -27,7 +27,7 @@ int get_som(const std::string& name, int weight) {
     return som * weight;
 }
 
-int main() {
+int main(void) {
     std::string names[6] = {"COLIN", "AMANDBA", "AMANDAB", "CAROL", "PauL", "JOSEPH"};
     int weights[6] = {1, 4, 4, 5, 2, 1};
 
