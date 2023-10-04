@@ -1,10 +1,9 @@
 #include <iostream>
-#include <math.h>
 
 int nb_dig(const int n, const int d){
     int dig = 0;
     for(int k = 1; k <= n; ++k){
-        int k_sq = std::pow(k, 2);
+        int k_sq = k * k;
 
         while(k_sq){
             int current_dig = k_sq % 10;
