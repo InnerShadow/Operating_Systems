@@ -35,7 +35,7 @@ int main() {
 
     std::vector<std::pair<int, std::string>> somVector;
 
-    for (int i = 0; i < 6; ++i) {
+    for (int i = 0; i < names->length(); ++i) {
         int som = get_som(names[i], weights[i]);
         somVector.push_back(std::make_pair(som, names[i]));
     }
