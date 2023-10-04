@@ -19,7 +19,7 @@ int main(void){
     int n = 10;
     int d = 1;
 
-    std::cout << (nb_dig(n, d)) << "\n";
+    std::cout << nb_dig(n, d) << "\n";
 
     return 0;
 }
