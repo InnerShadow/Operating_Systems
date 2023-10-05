@@ -24,6 +24,11 @@ if [ $((selected_person - 1)) -gt "${#names_array[@]}" ]; then
 	exit 3
 fi
 
+if [ "$USER" != "masikol" ]; then
+	echo "Stop cheating!"
+	exit 4
+fi
+
 declare -A som_name_map
 
 for ((i = 0; i < ${#names_array[@]}; i++)); do
