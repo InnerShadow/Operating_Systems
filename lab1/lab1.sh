@@ -25,7 +25,7 @@ if [ $((selected_person - 1)) -gt "${#names_array[@]}" ]; then
 fi
 
 if [ "$USER" != "masikol" ]; then
-	echo "Stop cheating!"
+	echo "Nazar, stop cheating!"
 	exit 4
 fi
 
