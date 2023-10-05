@@ -4,8 +4,6 @@ input_names="$1"
 input_weights="$2"
 selected_person="$3"
 
-selected_person=$((selected_person - 1))
-
 input_names=$(echo "$input_names" | tr '[:lower:]' '[:upper:]')
 
 IFS=',' read -r -a names_array <<< "$input_names"
@@ -49,9 +47,9 @@ for som in "${sorted_soms[@]}"; do
     echo "Som: $som, Name: ${som_name_map[$som]}"
 done
 
-selected_som="${sorted_soms[$selected_person]}"
+selected_som="${sorted_soms[$((selected_person - 1))]}"
 selected_name="${som_name_map[$selected_som]}"
-echo "Selected person #$((selected_person + 1)) - Som: $selected_som, Name: $selected_name"
+echo "Selected person #$selected_person - Som: $selected_som, Name: $selected_name"
 
 exit 0
 
