@@ -25,7 +25,7 @@ if [ $((selected_person - 1)) -gt "${#names_array[@]}" ]; then
 fi
 
 if [ "$USER" != "masikol" ]; then
-	echo "Nazar, stop cheating!"
+	echo "Stop cheating!"
 	exit 4
 fi
 
@@ -43,7 +43,7 @@ for ((i = 0; i < ${#names_array[@]}; i++)); do
     done
 
     result=$((som * weight))
-    som_name_map["$som"]=$element
+    som_name_map["$result"]=$element
 done
 
 sorted_soms=($(for som in "${!som_name_map[@]}"; do echo "$som"; done | sort -n))
