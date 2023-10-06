@@ -14,3 +14,8 @@ bedtools merge -i sorted_CDS.bed > merged_CDS.bed
 total_nucleotides=$(awk '{sum += $3 - $2} END {print sum}' merged_CDS.bed)
 
 echo "total_nucleotides = $total_nucleotides"
+
+# Вытаскиваем экзоны
+grep 'gene_type "protein_coding"' gencode.v25.primary_assembly.annotation.gtf | \
+    grep 'exon' | \
+    awk -F '\t' '{print $1, $4-1, $5}' OFS='\t' > unmerged_exon.bed
