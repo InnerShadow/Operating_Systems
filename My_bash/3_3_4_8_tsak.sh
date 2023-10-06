@@ -19,3 +19,7 @@ echo "total_nucleotides = $total_nucleotides"
 grep 'gene_type "protein_coding"' gencode.v25.primary_assembly.annotation.gtf | \
     grep 'exon' | \
     awk -F '\t' '{print $1, $4-1, $5}' OFS='\t' > unmerged_exon.bed
+
+# Сортируем экзоны
+sort -k1,1 -k2,2n unmerged_exon.bed > sorted_exon.bed
+
