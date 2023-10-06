@@ -4,4 +4,6 @@
 grep 'gene_type "protein_coding"' gencode.v25.primary_assembly.annotation.gtf | \
     awk -F '\t' '{if ($3 == "CDS") print $1, $4-1, $5}' OFS='\t' > unmerged_CDS.bed
 
+#Сортируем
+sort -k1,1 -k2,2n unmerged_CDS.bed > sorted_CDS.bed
 
