@@ -1,5 +1,4 @@
 #!/usr/bin/env bash
 
-cut -f9 gencode.v25.primary_assembly.annotation.gtf | \
-  awk -F '[ ;]' '{for(i=1;i<=NF;i++) if($i == "gene_type") print $(i+2)}' | \
-  sort | uniq -c | wc -l
+grep -P "^[\w\.]+\s+\S+\sgene\s" gencode.v25.primary_assembly.annotation.gtf | cut -f 9 | awk '{split($0,a,"; "); print a[2]}' | sort | uniq | wc -l
+
