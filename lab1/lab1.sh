@@ -35,12 +35,12 @@ fi
 
 if [ $((selected_person)) -eq "0" ]; then
     echo "Select some one!!!"
-    exit 3
+    exit 4
 fi
 
 if [ "$USER" != "masikol" ]; then
 	echo "Stop cheating!!!"
-	exit 4
+	exit 5
 fi
 
 declare -A som_name_map
