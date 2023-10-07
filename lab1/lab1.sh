@@ -6,26 +6,40 @@ selected_person="$3"
 
 input_names=$(echo "$input_names" | tr '[:lower:]' '[:upper:]')
 
-IFS=',' read -r -a names_array <<< "$input_names"
-IFS=',' read -r -a weights_array <<< "$input_weights"
+names_array=($(echo "$input_names" | awk -F ',' '
+{
+    for (i=1; i<=NF; i++) 
+        print $i
+}'))
+
+weights_array=($(echo "$input_weights" | awk -F ',' '
+{
+    for (i=1; i<=NF; i++) 
+        print $i
+}'))
 
 if [ "${#names_array[@]}" -eq "0" ]; then
-	echo "Empty names list!"
+	echo "Empty names list!!!"
     exit 1
 fi
 
 if [ "${#weights_array[@]}" -lt "${#names_array[@]}" ]; then
-    echo "Weights array size should be at least equal to the names array size!"
+    echo "Weights array size should be at least equal to the names array size!!!"
     exit 2
 fi
 
 if [ $((selected_person - 1)) -gt "${#names_array[@]}" ]; then
-	echo "Invalid selected person!"
+	echo "Invalid selected person!!!"
 	exit 3
 fi
 
+if [ $((selected_person)) -eq "0" ]; then
+    echo "Select some one!!!"
+    exit 3
+fi
+
 if [ "$USER" != "masikol" ]; then
-	echo "Stop cheating!"
+	echo "Stop cheating!!!"
 	exit 4
 fi
 
@@ -46,7 +60,10 @@ for ((i = 0; i < ${#names_array[@]}; i++)); do
     som_name_map["$result"]=$element
 done
 
-sorted_soms=($(for som in "${!som_name_map[@]}"; do echo "$som"; done | sort -n))
+sorted_soms=($(
+    for som in "${!som_name_map[@]}"; do
+        echo "$som"
+    done | sort -n))
 
 for som in "${sorted_soms[@]}"; do
     echo "Som: $som, Name: ${som_name_map[$som]}"
