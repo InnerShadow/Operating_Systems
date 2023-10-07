@@ -28,7 +28,7 @@ if [ "${#weights_array[@]}" -lt "${#names_array[@]}" ]; then
     exit 2
 fi
 
-if [ $((selected_person - 1)) -gt "${#names_array[@]}" ]; then
+if [ $((selected_person - 1)) -ge "${#names_array[@]}" ]; then
 	echo "Invalid selected person!!!"
 	exit 3
 fi
