@@ -1,9 +1,0 @@
-@HD	VN:1.0	SO:unsorted
-@SQ	SN:I	LN:15072434
-@SQ	SN:II	LN:15279421
-@SQ	SN:III	LN:13783801
-@SQ	SN:IV	LN:17493829
-@SQ	SN:MtDNA	LN:13794
-@SQ	SN:V	LN:20924180
-@SQ	SN:X	LN:17718942
-@PG	ID:bowtie2	PN:bowtie2	VN:2.4.4	CL:"/usr/bin/bowtie2-align-s --wrapper basic-0 -S Ce_Pol2.sam -x genome -U Ce_Pol2.fastq"
