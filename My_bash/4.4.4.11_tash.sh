@@ -8,10 +8,11 @@ samtools faidx ce_ens_86.fa > ce_ens_86.fa.fai
 
 prefetch -v SRR3535767
 
-fastq-dump --split-3 SRR3535767.sra >Ce_Pol2.fastq
+fastq-dump --split-3 SRR3535767.sra > Ce_Pol2.fastq
 
 mv SRR3535767.fastq Ce_Pol2.fastq
 
 bowtie2-build ce_ens_86.fa genome
 
 bowtie2 -S Ce_Pol2.sam -x genome -U Ce_Pol2.fastq
+
