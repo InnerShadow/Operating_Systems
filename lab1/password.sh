@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 length=$1
-charset='abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()-=_+[]{}|;:,.<>?/'
+charset='qwertyuiopasdfghjklzxcvbnmQWERTYUIOPASDFGHJKLZXCVBNM!@#$%^&*()-=_+[]{}|;:,.<>?/'
 
 password=""
 
