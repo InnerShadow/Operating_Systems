@@ -2,17 +2,27 @@
 #include <unistd.h>
 #include <sys/types.h>
 #include <sys/wait.h>
+#include <stdlib.h>
 
-int main() {
-    int arr[] = {0, 1, 1, 1, 3, 3, 5};
-    int pid_arr[7] = { 0 };
+int main(int argc, char *argv[]) {
+    if (argc < 2) {
+        fprintf(stderr, "Usage: %s <arr[0]> <arr[1]> ... <arr[n-1]>\n", argv[0]);
+        return 1;
+    }
+
+    int length = argc - 1;
+    int *arr = (int *)malloc(length * sizeof(int));
+
+    for (size_t i = 0; i < length; ++i) {
+        arr[i] = atoi(argv[i + 1]);
+    }
+
+    int *pid_arr = (int *)malloc(length * sizeof(int));
 
     pid_arr[0] = getpid();
     printf("1'st process (PID %d) - dangen master process (PPID %d)\n", 1, getppid());
 
-    int length = sizeof(arr) / sizeof(arr[0]);
-
-    for (size_t i = 1; i < length; ++i) {
+    for (int i = 1; i < length; ++i) {
         if (getpid() == pid_arr[arr[i] - 1]) {
             pid_t child_pid = fork();
 
@@ -24,6 +34,8 @@ int main() {
         }
     }
 
+    free(arr);
+    free(pid_arr);
     wait(NULL);
 
     return 0;
