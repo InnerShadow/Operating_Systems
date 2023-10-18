@@ -23,9 +23,9 @@ int main(int argc, char *argv[]) {
     int *pid_arr = (int *)malloc(length * sizeof(int));
 
     pid_arr[0] = getpid();
-    printf("\n1'st process (ID %d) - dangen master process (ID %d)\n", 1, getppid());
+    printf("1'st process (ID %d) - dangen master process (ID %d)\n", 1, getppid());
 
-    for (int i = 1; i < length; ++i) {
+    for (size_t i = 1; i < length; ++i) {
         if (getpid() == pid_arr[arr[i] - 1]) {
             pid_t child_pid = fork();
 
@@ -40,8 +40,7 @@ int main(int argc, char *argv[]) {
     wait(NULL);
 
     if(getpid() == pid_arr[exec]){
-        execlp("ls", "ls", "-h", NULL);
-        printf("\n");   
+        execlp("ls", "ls", "-h", NULL); 
     }
 
     wait(NULL);
