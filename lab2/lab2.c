@@ -46,7 +46,7 @@ int main(int argc, char *argv[]) {
 
     wait(NULL);
 
-    if(getppid() - pid_arr[0] >= 0){
+    if(getppid() - pid_arr[0] + 1 > 0){
         printf("Process %d with master PID %d finished.\n", 
             getpid() - pid_arr[0] + 1, getppid() - pid_arr[0] + 1);
     } else {
