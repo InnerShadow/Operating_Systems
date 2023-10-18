@@ -30,8 +30,8 @@ int main(int argc, char *argv[]) {
             pid_t child_pid = fork();
 
             if (child_pid == 0) {
-                printf("Slave process (ID %d) - dangen master process (Master ID %d)\n", getpid() - pid_arr[0] + 1, 
-                    getppid() - pid_arr[0] + 1);
+                printf("Slave process (ID %d) - dangen master process (Master ID %d)\n", 
+                    getpid() - pid_arr[0] + 1, getppid() - pid_arr[0] + 1);
                 pid_arr[i] = getpid();
             }
         }
@@ -47,9 +47,11 @@ int main(int argc, char *argv[]) {
     wait(NULL);
 
     if(getppid() - pid_arr[0] >= 0){
-        printf("Process %d with master PID %d finished.\n", getpid() - pid_arr[0] + 1, getppid() - pid_arr[0] + 1);
+        printf("Process %d with master PID %d finished.\n", 
+            getpid() - pid_arr[0] + 1, getppid() - pid_arr[0] + 1);
     } else {
-        printf("Process %d with master PID %d finished.\n", getpid() - pid_arr[0] + 1, getppid());
+        printf("Process %d with master PID %d finished.\n", 
+            getpid() - pid_arr[0] + 1, getppid());
     }
 
     free(arr);
