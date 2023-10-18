@@ -23,25 +23,27 @@ int main(int argc, char *argv[]) {
     int *pid_arr = (int *)malloc(length * sizeof(int));
 
     pid_arr[0] = getpid();
-    printf("1'st process (PID %d) - dangen master process (PPID %d)\n", 1, getppid());
+    printf("1'st process (ID %d) - dangen master process (ID %d)\n", 1, getppid());
 
     for (int i = 1; i < length; ++i) {
         if (getpid() == pid_arr[arr[i] - 1]) {
             pid_t child_pid = fork();
 
             if (child_pid == 0) {
-                printf("Slave process (PID %d) - dangen master process (PPID %d)\n", getpid() - pid_arr[0] + 1, 
+                printf("Slave process (ID %d) - dangen master process (Master ID %d)\n", getpid() - pid_arr[0] + 1, 
                     getppid() - pid_arr[0] + 1);
                 pid_arr[i] = getpid();
             }
         }
         if(exec == i){
             printf("Process %d lunch ls - h: ", exec);
-            execlp("ls", "ls", "-h" );
+            execlp("ls", "ls", "-h");
             printf("\n");
             wait(NULL);
         }
     }
+
+    printf("Process %d with master PID %d finished.\n", getpid() - pid_arr[0], getppid() - pid_arr[0]);
 
     free(arr);
     free(pid_arr);
