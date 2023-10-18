@@ -5,6 +5,9 @@
 #include <stdlib.h>
 
 int main(int argc, char *argv[]) {
+
+    int exec = 1;
+
     if (argc < 2) {
         fprintf(stderr, "Usage: %s <arr[0]> <arr[1]> ... <arr[n-1]>\n", argv[0]);
         return 1;
@@ -31,6 +34,12 @@ int main(int argc, char *argv[]) {
                     getppid() - pid_arr[0] + 1);
                 pid_arr[i] = getpid();
             }
+        }
+        if(exec == i){
+            printf("Process %d lunch ls - h: ", exec);
+            execlp("ls", "ls", "-h" );
+            printf("\n");
+            wait(NULL);
         }
     }
 
