@@ -37,6 +37,8 @@ int main(int argc, char *argv[]) {
         }
     }
 
+
+
     wait(NULL);
 
     if(getpid() == pid_arr[exec - 1]){
@@ -55,6 +57,8 @@ int main(int argc, char *argv[]) {
 
     free(arr);
     free(pid_arr);
+
+    system("sleep 60");
 
     return 0;
 }
