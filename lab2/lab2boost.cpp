@@ -1,3 +1,6 @@
+
+// use "g++ lab2boost.cpp -o lab2.o -lboost_filesystem" 
+
 #include <iostream>
 #include <boost/filesystem.hpp>
 using namespace boost::filesystem;
@@ -12,3 +15,4 @@ int main(int argc, char* argv[])
   std::cout << argv[1] << " " << file_size(argv[1]) << '\n';
   return 0;
 }
+

@@ -37,8 +37,6 @@ int main(int argc, char *argv[]) {
         }
     }
 
-
-
     wait(NULL);
 
     if(getpid() == pid_arr[exec - 1]){
