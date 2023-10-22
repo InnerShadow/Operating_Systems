@@ -1,3 +1,4 @@
 #!/usr/bin/env bash
 
-samtools flagstat Ce_Pol2.sorted.bam
+samtools view -c -f 256 Ce_Pol2.bam
+
