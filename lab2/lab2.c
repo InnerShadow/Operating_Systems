@@ -1,42 +1,62 @@
 #include <stdio.h>
-#include <stdlib.h>
 #include <unistd.h>
+#include <sys/types.h>
+#include <sys/wait.h>
+#include <stdlib.h>
 
-// Функция для создания процессов и сообщений о генеалогическом дереве
-void create_process(int generations[], int num_generations, int current_generation) {
-    int pid = getpid();
-    int parent_pid = getppid();
+int main(int argc, char *argv[]) {
 
-    printf("Процесс с ID %d породил процесс с ID %d\n", parent_pid, pid);
+    int exec = 1;
 
-    if (current_generation < num_generations) {
-        for (int i = 0; i < generations[current_generation]; i++) {
-            if (fork() == 0) {
-                create_process(generations, num_generations, current_generation + 1);
-                exit(0);
+    if (argc < 2) {
+        printf("Usage: %s <arr[0]> <arr[1]> ... <arr[n-1]>\n", argv[0]);
+        return 1;
+    }
+
+    int length = argc - 1;
+    int *arr = (int *)malloc(length * sizeof(int));
+
+    for (size_t i = 0; i < length; ++i) {
+        arr[i] = atoi(argv[i + 1]);
+    }
+
+    int *pid_arr = (int *)malloc(length * sizeof(int));
+
+    pid_arr[0] = getpid();
+    printf("1'st process (ID %d) - dangen master process (ID %d)\n", 1, getppid());
+
+    for (size_t i = 1; i < length; ++i) {
+        if (getpid() == pid_arr[arr[i] - 1]) {
+            pid_t child_pid = fork();
+
+            if (child_pid == 0) {
+                printf("Slave process (ID %d) - dangen master process (Master ID %d)\n", 
+                    getpid() - pid_arr[0] + 1, getppid() - pid_arr[0] + 1);
+                pid_arr[i] = getpid();
             }
         }
     }
 
-    printf("Процесс с ID %d и ID родителя %d завершает работу\n", pid, parent_pid);
-}
+    wait(NULL);
 
-int main() {
-    int generations[] = {0, 1, 1, 1, 3, 3, 5};
-    int num_generations = sizeof(generations) / sizeof(generations[0]);
-
-    int pid = getpid();
-    int parent_pid = getppid();
-
-    printf("Процесс с ID %d и ID родителя %d\n", pid, parent_pid);
-
-    // Запускаем ls -h в процессе с ID 1
-    if (pid == 1) {
-        execlp("ls", "ls", "-h", NULL);
-        perror("execlp");
+    if(getpid() == pid_arr[exec - 1]){
+        execlp("ls", "ls", "-h", NULL); 
     }
 
-    create_process(generations, num_generations, 1);
+    wait(NULL);
+
+    if(getppid() - pid_arr[0] + 1 > 0){
+        printf("Process %d with master PID %d finished.\n", 
+            getpid() - pid_arr[0] + 1, getppid() - pid_arr[0] + 1);
+    } else {
+        printf("Process %d with master PID %d finished.\n", 
+            getpid() - pid_arr[0] + 1, getppid());
+    }
+
+    free(arr);
+    free(pid_arr);
+
+    system("sleep 60");
 
     return 0;
 }
