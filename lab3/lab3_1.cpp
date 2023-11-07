@@ -2,6 +2,7 @@
 #include <pthread.h>
 #include <unistd.h>
 
+
 static const int NUM_PHILOSOPHERS = 5;
 pthread_mutex_t forks[NUM_PHILOSOPHERS];
 
