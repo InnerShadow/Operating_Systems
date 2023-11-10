@@ -19,7 +19,7 @@ weights_array=($(echo "$input_weights" | awk -F ',' '
 }'))
 
 if [ "${#names_array[@]}" -eq "0" ]; then
-	echo "Empty names list!!!"
+    echo "Empty names list!!!"
     exit 1
 fi
 
@@ -29,18 +29,18 @@ if [ "${#weights_array[@]}" -lt "${#names_array[@]}" ]; then
 fi
 
 if [ $((selected_person - 1)) -ge "${#names_array[@]}" ]; then
-	echo "Invalid selected person!!!"
-	exit 3
+    echo "Invalid selected person!!!"
+    exit 3
 fi
 
 if [ $((selected_person)) -eq "0" ]; then
-    echo "Select some one!!!"
+    echo "Select someone!!!"
     exit 4
 fi
 
 if [ "$USER" != "masikol" ]; then
-	echo "Stop cheating!!!"
-	exit 5
+    echo "Stop cheating!!!"
+    exit 5
 fi
 
 declare -A som_name_map
@@ -57,21 +57,23 @@ for ((i = 0; i < ${#names_array[@]}; i++)); do
     done
 
     result=$((som * weight))
-    som_name_map["$result"]=$element
+    
+    som_name_map["$element"]=$result
 done
 
 sorted_soms=($(
     for som in "${!som_name_map[@]}"; do
-        echo "$som"
-    done | sort -n))
+        echo "${som_name_map[$som]} $som"
+    done | sort -n | awk '{print $2}')
+)
 
 for som in "${sorted_soms[@]}"; do
-    echo "Som: $som, Name: ${som_name_map[$som]}"
+    echo "Som: ${som_name_map[$som]}, Name: $som"
 done
 
 selected_som="${sorted_soms[$((selected_person - 1))]}"
 selected_name="${som_name_map[$selected_som]}"
-echo "Selected person #$selected_person - Som: $selected_som, Name: $selected_name"
+echo "Selected person #$selected_person - Name: $selected_som, Person: $selected_name"
 
 exit 0
 
