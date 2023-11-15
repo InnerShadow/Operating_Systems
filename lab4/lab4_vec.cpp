@@ -23,6 +23,8 @@ struct MyAllocator {
 };
 
 int main() {
+    std::size_t num_elements = 10;
+
     const std::size_t memSize = 1024;
 
     void* memoryBlock = std::malloc(memSize);
@@ -31,7 +33,7 @@ int main() {
 
     std::vector<int, MyAllocator<int>> vec;
 
-    for(std::size_t i = 0; i < 10; ++i){
+    for(std::size_t i = 0; i < num_elements; ++i){
         vec.push_back((i + 20) * (10 + i));
     }    
 

@@ -8,7 +8,6 @@
   #define MY_DEBUG 1
 #endif
 
-
 #define MIN_BLOCK_SIZE 16
 
 typedef struct header* (*HeaderIterator)(struct header*);
@@ -23,12 +22,10 @@ struct tail {
     std::size_t actualSize;
 };
 
-
 struct header* _startHeader;
 struct tail* _endTail;
 std::size_t _size;
 std::size_t minSize;
-
 
 struct header* initBlock(void *buf, std::size_t size) {
     #ifdef MY_DEBUG
@@ -123,7 +120,7 @@ void joinBlocks(struct header* phStart, struct header* phEnd) {
         #ifdef MY_DEBUG
             std::cout << "  swap block. phtStart " << phStart << "; phEnd " << phEnd << std::endl;
         #endif
-  }
+    }
   
     struct tail* ptEnd = getTail(phEnd);
     #ifdef MY_DEBUG
@@ -132,14 +129,16 @@ void joinBlocks(struct header* phStart, struct header* phEnd) {
   
     phStart->actualSize = getActualSize(phStart, ptEnd);
     ptEnd->actualSize = phStart->actualSize;
+
     #ifdef MY_DEBUG
         std::cout << "   actualSize = " << phStart->actualSize << std::endl;
     #endif
 }
 
 struct header* utilizeBlock(struct header* ph, std::size_t size) {
-    if(!ph->free || ph->actualSize < size)
-        return NULL;
+    if(!ph->free || ph->actualSize < size){
+        return nullptr;
+    }
   
     #ifdef MY_DEBUG
         std::cout << "utilizeBlock(" << ph << ", " << size << ")" << std::endl;
@@ -221,7 +220,7 @@ void mysetup(void *buf, std::size_t size) {
     minSize = getAllSize(MIN_BLOCK_SIZE);
 }
 
-void *myalloc(std::size_t size) {
+void* myalloc(std::size_t size) {
     #ifdef MY_DEBUG
         std::cout << "\n--------------------START MEMORY ALLOC--------------------\n\n";
     #endif
