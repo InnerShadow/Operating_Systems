@@ -5,7 +5,7 @@
   #include <cstdlib>
   #include <iomanip>
   
-  #define MY_DEBUG 1
+  #define MY_DEBUG
 #endif
 
 #define MIN_BLOCK_SIZE 16
@@ -29,7 +29,7 @@ std::size_t minSize;
 
 struct header* initBlock(void *buf, std::size_t size) {
     #ifdef MY_DEBUG
-        std::cout << "initBlock(" << buf << ", " << size << ')' << std::endl;
+        std::cout << "initBlock(" << buf << ", " << size << ')' << "\n";
     #endif
 
     struct header* ph = (struct header*)buf;
@@ -37,7 +37,7 @@ struct header* initBlock(void *buf, std::size_t size) {
     ph->actualSize = size - sizeof(struct header) - sizeof(struct tail);
 
     #ifdef MY_DEBUG
-        std::cout << "   ph addr = " << ph << "; free = " << (int)(ph->free) << "; actualSize = " << ph->actualSize << std::endl;
+        std::cout << "   ph addr = " << ph << "; free = " << (int)(ph->free) << "; actualSize = " << ph->actualSize << "\n";
     #endif
 
     struct tail* pt = (struct tail*)((unsigned char*)buf + size - sizeof(struct tail));
@@ -45,7 +45,7 @@ struct header* initBlock(void *buf, std::size_t size) {
     pt->actualSize = ph->actualSize;
 
     #ifdef MY_DEBUG
-        std::cout << "   pt addr = " << pt << "; free = " << (int)(pt->free) << "; actualSize = " << pt->actualSize << std::endl;
+        std::cout << "   pt addr = " << pt << "; free = " << (int)(pt->free) << "; actualSize = " << pt->actualSize << "\n";
     #endif
 
     return ph;
@@ -65,7 +65,7 @@ struct header* getHeader(struct tail* ptail) {
 
 struct header* getNext(struct header* phead) {
     #ifdef MY_DEBUG
-        std::cout << "getNext(" << phead << ')' << std::endl;
+        std::cout << "getNext(" << phead << ')' << "\n";
     #endif
 
     struct tail* ptail = getTail(phead);
@@ -80,7 +80,7 @@ struct header* getNext(struct header* phead) {
 
 struct header* getPrevious(struct header* phead) {
     #ifdef MY_DEBUG
-        std::cout << "getPrevious(" << phead << ')' << std::endl;
+        std::cout << "getPrevious(" << phead << ')' << "\n";
     #endif
 
     if(phead == _startHeader){
@@ -110,7 +110,7 @@ void joinBlocks(struct header* phStart, struct header* phEnd) {
     }
   
     #ifdef MY_DEBUG
-        std::cout << "joinBlocks(" << phStart << ", " << phEnd << ')' << std::endl;
+        std::cout << "joinBlocks(" << phStart << ", " << phEnd << ')' << "\n";
     #endif
   
     if(phStart > phEnd) {
@@ -118,30 +118,30 @@ void joinBlocks(struct header* phStart, struct header* phEnd) {
         phStart = phEnd;
         phEnd = tmp;
         #ifdef MY_DEBUG
-            std::cout << "  swap block. phtStart " << phStart << "; phEnd " << phEnd << std::endl;
+            std::cout << "  swap block. phtStart " << phStart << "; phEnd " << phEnd << "\n";
         #endif
     }
   
     struct tail* ptEnd = getTail(phEnd);
     #ifdef MY_DEBUG
-        std::cout << "   ptEnd = " << ptEnd << std::endl;
+        std::cout << "   ptEnd = " << ptEnd << "\n";
     #endif
   
     phStart->actualSize = getActualSize(phStart, ptEnd);
     ptEnd->actualSize = phStart->actualSize;
 
     #ifdef MY_DEBUG
-        std::cout << "   actualSize = " << phStart->actualSize << std::endl;
+        std::cout << "   actualSize = " << phStart->actualSize << "\n";
     #endif
 }
 
 struct header* utilizeBlock(struct header* ph, std::size_t size) {
     if(!ph->free || ph->actualSize < size){
-        return nullptr;
+        return NULL;
     }
   
     #ifdef MY_DEBUG
-        std::cout << "utilizeBlock(" << ph << ", " << size << ")" << std::endl;
+        std::cout << "utilizeBlock(" << ph << ", " << size << ")" << "\n";
     #endif
   
     std::size_t allSize = getAllSize(size);
@@ -185,7 +185,7 @@ struct header* joinNearestFreeBlocks(struct header* ph, HeaderIterator iterator)
         return ph;
   
     #ifdef MY_DEBUG
-        std::cout << "joinNearestFreeBlocks(" << ph << ')' << std::endl;
+        std::cout << "joinNearestFreeBlocks(" << ph << ')' << "\n";
     #endif
   
     struct header* next = iterator(ph);
@@ -195,7 +195,7 @@ struct header* joinNearestFreeBlocks(struct header* ph, HeaderIterator iterator)
   
     while(next != NULL && next->free) {
         #ifdef MY_DEBUG
-            std::cout << "; free = " << (unsigned)(next->free) << std::endl;
+            std::cout << "; free = " << (unsigned)(next->free) << "\n";
         #endif
         joinBlocks(ph, next);
 
@@ -207,7 +207,7 @@ struct header* joinNearestFreeBlocks(struct header* ph, HeaderIterator iterator)
         #endif
     }
     #ifdef MY_DEBUG
-        std::cout << std::endl;
+        std::cout << "\n";
     #endif
   
     return ph;
@@ -249,7 +249,7 @@ void myfree(void *p) {
     #endif
 
     #ifdef MY_DEBUG
-        std::cout << "myfree(" << p << ')' << std::endl;
+        std::cout << "myfree(" << p << ')' << "\n";
     #endif
     
     if(p == NULL)
@@ -259,14 +259,14 @@ void myfree(void *p) {
     ph->free = 1;
     
     #ifdef MY_DEBUG
-        std::cout << "   ph addr = " << ph << "; free = " << (unsigned int)(ph->free) << "; actualSize = " << ph->actualSize << std::endl;
+        std::cout << "   ph addr = " << ph << "; free = " << (unsigned int)(ph->free) << "; actualSize = " << ph->actualSize << "\n";
     #endif
   
     struct tail* pt = getTail(ph);
     pt->free = 1;
     
     #ifdef MY_DEBUG
-        std::cout << "   pt addr = " << pt << "; free = " << (unsigned int)(pt->free) << "; actualSize = " << pt->actualSize << std::endl;
+        std::cout << "   pt addr = " << pt << "; free = " << (unsigned int)(pt->free) << "; actualSize = " << pt->actualSize << "\n";
     #endif
   
     ph = joinNearestFreeBlocks(ph, getPrevious);

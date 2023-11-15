@@ -1,31 +1,35 @@
+#include <stdio.h>
+#include <stdlib.h>
+
 #include <iostream>
 #include <vector>
 #include <cstdlib>
 #include <chrono>
 #include <fstream>
 
-#define MY_TEST
-const int PAGE_SIZE = 4096 * 1024;
+const int PAGE_SIZE = 4096;
 
-#define TIME_COUNT
-
-//#define SOMETIMES
+//#define TIME_COUNT
 
 #define MYALLOC
 
-#include "pageing.h"
+//#define SOMETIMES
+
+#define MY_TEST
+
+#include "pageingPreInit.h"
 
 template <typename T>
 struct MyAllocator {
-    typedef T value_type;
+    using value_type = T;
 
     MemoryManager manager;
 
-    MyAllocator() noexcept {
-        initializeMemoryManager(&manager); 
+    MyAllocator(void* initialMemory, size_t initialSize) noexcept {
+        initializeMemoryManager(&manager, initialMemory, initialSize);
     }
 
-    template <class U>
+    template <typename U>
     MyAllocator(const MyAllocator<U>&) noexcept {}
 
     T* allocate(std::size_t n) {
@@ -42,6 +46,7 @@ struct MyAllocator {
 };
 
 int main(int argc, char* argv[]) {
+
     #ifdef SOMETIMES
         for(std::size_t j = 0; j < 100; ++j){
     #endif
@@ -58,7 +63,12 @@ int main(int argc, char* argv[]) {
     #endif
 
     #ifdef MYALLOC
-        std::vector<int, MyAllocator<int>> vec;
+        size_t blockSize = PAGE_SIZE * 10;
+        void* memoryBlock = std::malloc(blockSize);
+
+        MyAllocator<int> allocator(memoryBlock, blockSize);
+
+        std::vector<int, MyAllocator<int>> vec(allocator);
     #endif
 
     #ifndef MYALLOC
@@ -95,6 +105,7 @@ int main(int argc, char* argv[]) {
 
         outFile << elapsedTime << "\n";
 
+        std::free(memoryBlock);
     #endif
 
     #ifdef SOMETIMES
