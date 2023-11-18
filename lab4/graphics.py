@@ -2,7 +2,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 def main():
-    N = 100
+    N = 10000
 
     with open(f"time_{N}.txt", 'r')  as f:
         data1 = [int(line.strip()) for line in f.readlines()]
