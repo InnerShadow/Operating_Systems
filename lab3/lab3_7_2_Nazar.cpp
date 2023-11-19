@@ -9,10 +9,8 @@ const int STULIJA = 5;
 using namespace std;
 
 pthread_mutex_t parichmacherMutex = PTHREAD_MUTEX_INITIALIZER;
-pthread_mutex_t zalaOzhidaniyaMutex = PTHREAD_MUTEX_INITIALIZER;
 queue<int> ozhidayushchieKlienty;
 sem_t dostupnyeKresla;
-pthread_cond_t konditsiyaDostupnogoKresla = PTHREAD_COND_INITIALIZER;
 
 void* strizhkaVolosUParichmachera(void* arg) {
     int idKlienta = *((int*)arg);
@@ -25,10 +23,8 @@ void* strizhkaVolosUParichmachera(void* arg) {
 
 void pribytieKlienta(int idKlienta) {
     if (sem_trywait(&dostupnyeKresla) == 0) {
-        pthread_mutex_lock(&zalaOzhidaniyaMutex);
         ozhidayushchieKlienty.push(idKlienta);
         cout << "Клиент " << idKlienta << " занимает место в приемной." << endl;
-        pthread_mutex_unlock(&zalaOzhidaniyaMutex);
     } else {
         cout << "Нет свободных мест. Клиент " << idKlienta << " облысел." << endl;
     }
@@ -51,20 +47,13 @@ void* simulirovatPribytieKlientov(void* arg) {
 
 void* simulirovatParikmacherskuyu(void* arg) {
     while (true) {
-        pthread_mutex_lock(&zalaOzhidaniyaMutex);
-
         while (ozhidayushchieKlienty.empty()) {
             cout << "Парикмахер идет спать." << endl;
-            pthread_mutex_unlock(&zalaOzhidaniyaMutex);
             sleep(2);
-
-            pthread_mutex_lock(&zalaOzhidaniyaMutex);
         }
 
         int id = ozhidayushchieKlienty.front();
         ozhidayushchieKlienty.pop();
-        pthread_mutex_unlock(&zalaOzhidaniyaMutex);
-
         cout << "Клиент " << id << " приглашен парикмахером." << endl;
 
         pthread_t parichmacherThread;
@@ -89,7 +78,6 @@ int main(void) {
     pthread_join(simulirovanieThread, nullptr);
 
     sem_destroy(&dostupnyeKresla);
-    pthread_cond_destroy(&konditsiyaDostupnogoKresla);
 
     return 0;
 }

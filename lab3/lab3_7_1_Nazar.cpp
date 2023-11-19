@@ -10,7 +10,6 @@ using namespace std;
 const int STULIJA = 5;
 
 mutex parichmacherMutex;
-mutex zalaOzhidaniyaMutex;
 queue<int> ozhidayushchieKlienty;
 condition_variable cv;
 boost::interprocess::interprocess_semaphore dostupnyeKresla(STULIJA);
@@ -29,7 +28,6 @@ void parichmacherSpat() {
 
 void pribytieKlienta(int idKlienta) {
     if (dostupnyeKresla.try_wait()) {
-        lock_guard<mutex> lock(zalaOzhidaniyaMutex);
         ozhidayushchieKlienty.push(idKlienta);
         cout << "Клиент " << idKlienta << " занимает место в приемной." << endl;
         cv.notify_one();
@@ -54,18 +52,14 @@ void simulirovatPribytieKlientov() {
 
 void simulirovatParikmacherskuyu() {
     while (true) {
-        unique_lock<mutex> lock(zalaOzhidaniyaMutex);
-
         if (!ozhidayushchieKlienty.empty()) {
             int id = ozhidayushchieKlienty.front();
             ozhidayushchieKlienty.pop();
-            lock.unlock();
 
             cout << "Клиент " << id << " приглашен парикмахером." << endl;
             strizhkaVolosUParichmachera(id);
             dostupnyeKresla.post();
         } else {
-            lock.unlock();
             parichmacherSpat();
         }
     }

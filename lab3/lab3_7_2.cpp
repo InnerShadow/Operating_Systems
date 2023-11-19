@@ -7,26 +7,22 @@
 const int MAX_CHAIRS = 5;
 
 pthread_mutex_t barberMutex = PTHREAD_MUTEX_INITIALIZER;
-pthread_mutex_t waitingRoomMutex = PTHREAD_MUTEX_INITIALIZER;
 std::queue<int> waitingCustomers;
 sem_t availableChairs;
-pthread_cond_t chairAvailableCond = PTHREAD_COND_INITIALIZER;
 
 void* barberCutHair(void* arg) {
     int customerId = *((int*)arg);
     pthread_mutex_lock(&barberMutex);
     std::cout << "Barber is cutting hair for Customer " << customerId << "." << std::endl;
-    pthread_mutex_unlock(&barberMutex);
     sleep(4);
+    pthread_mutex_unlock(&barberMutex);
     return nullptr;
 }
 
 void customerArrives(int customerId) {
     if (sem_trywait(&availableChairs) == 0) {
-        pthread_mutex_lock(&waitingRoomMutex);
         waitingCustomers.push(customerId);
         std::cout << "Customer " << customerId << " takes a seat in the reception area." << std::endl;
-        pthread_mutex_unlock(&waitingRoomMutex);
     } else {
         std::cout << "------ No available chairs. Customer " << customerId << " leaves ------" << std::endl;
     }
@@ -49,19 +45,13 @@ void* simulateCustomerArrivals(void* arg) {
 
 void* barberShopSimulation(void* arg) {
     while (true) {
-        pthread_mutex_lock(&waitingRoomMutex);
-
         while (waitingCustomers.empty()) {
             std::cout << "Barber is going to sleep." << std::endl;
-            pthread_mutex_unlock(&waitingRoomMutex);
             sleep(2);
-
-            pthread_mutex_lock(&waitingRoomMutex);
         }
 
         int id = waitingCustomers.front();
         waitingCustomers.pop();
-        pthread_mutex_unlock(&waitingRoomMutex);
 
         std::cout << "Customer " << id << " is invited by the barber." << std::endl;
 
@@ -87,7 +77,7 @@ int main(void) {
     pthread_join(simulationThread, nullptr);
 
     sem_destroy(&availableChairs);
-    pthread_cond_destroy(&chairAvailableCond);
 
     return 0;
 }
+

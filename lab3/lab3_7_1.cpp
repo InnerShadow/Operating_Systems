@@ -8,7 +8,6 @@
 const int MAX_CHAIRS = 5;
 
 std::mutex barberMutex;
-std::mutex waitingRoomMutex;
 std::queue<int> waitingCustomers;
 std::condition_variable cv;
 boost::interprocess::interprocess_semaphore availableChairs(MAX_CHAIRS);
@@ -27,7 +26,6 @@ void barberSleep() {
 
 void customerArrives(int customerId) {
     if (availableChairs.try_wait()) {
-        std::lock_guard<std::mutex> lock(waitingRoomMutex);
         waitingCustomers.push(customerId);
         std::cout << "Customer " << customerId << " takes a seat in the reception area." << std::endl;
         cv.notify_one();
@@ -52,18 +50,14 @@ void simulateCustomerArrivals() {
 
 void barberShopSimulation() {
     while (true) {
-        std::unique_lock<std::mutex> lock(waitingRoomMutex);
-
         if (!waitingCustomers.empty()) {
             int id = waitingCustomers.front();
             waitingCustomers.pop();
-            lock.unlock();
 
             std::cout << "Customer " << id << " is invited by the barber." << std::endl;
             barberCutHair(id);
             availableChairs.post();
         } else {
-            lock.unlock();
             barberSleep();
         }
     }
@@ -78,3 +72,4 @@ int main(void) {
 
     return 0;
 }
+
