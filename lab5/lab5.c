@@ -242,7 +242,7 @@ int main() {
     printf("\n\nAfter deletion:\n");
     readFromBinaryFile("fs.bin", &fs);
 
-    free(fs.blocks); // Освобождаем выделенную память
+    free(fs.blocks);
 
     return 0;
 }
