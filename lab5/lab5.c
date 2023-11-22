@@ -1,5 +1,4 @@
 #include <stdio.h>
-#include <stdlib.h>
 #include <string.h>
 
 #define HEADER_SIZE 128
@@ -14,34 +13,8 @@ struct Block {
 };
 
 struct Filesystem {
-    struct Block* blocks;
-    int numBlocks;
+    struct Block blocks[NUM_BLOCKS];
 };
-
-void initBlocks(struct Filesystem* fs) {
-    fs->blocks = (struct Block*)malloc(NUM_BLOCKS * sizeof(struct Block));
-    fs->numBlocks = NUM_BLOCKS;
-
-    for (size_t i = 0; i < fs->numBlocks; ++i) {
-        fs->blocks[i].free = 1;
-        fs->blocks[i].size = sizeof(struct Block);
-        memset(fs->blocks[i].header, 0, sizeof(fs->blocks[i].header));
-        memset(fs->blocks[i].data, 0, sizeof(fs->blocks[i].data));
-    }
-}
-
-void expandFileSystem(struct Filesystem* fs, int newSize) {
-    fs->blocks = (struct Block*)realloc(fs->blocks, newSize * sizeof(struct Block));
-
-    for (size_t i = fs->numBlocks; i < newSize; ++i) {
-        fs->blocks[i].free = 1;
-        fs->blocks[i].size = sizeof(struct Block);
-        memset(fs->blocks[i].header, 0, sizeof(fs->blocks[i].header));
-        memset(fs->blocks[i].data, 0, sizeof(fs->blocks[i].data));
-    }
-
-    fs->numBlocks = newSize;
-}
 
 void writeToBinaryFile(const char* fileName, struct Filesystem* fs) {
     FILE* file = fopen(fileName, "wb");
@@ -50,7 +23,7 @@ void writeToBinaryFile(const char* fileName, struct Filesystem* fs) {
         return;
     }
 
-    fwrite(fs->blocks, sizeof(struct Block), fs->numBlocks, file);
+    fwrite(fs->blocks, sizeof(struct Block), NUM_BLOCKS, file);
 
     fclose(file);
 }
@@ -62,9 +35,9 @@ void readFromBinaryFile(const char* fileName, struct Filesystem* fs) {
         return;
     }
 
-    fread(fs->blocks, sizeof(struct Block), fs->numBlocks, file);
+    fread(fs->blocks, sizeof(struct Block), NUM_BLOCKS, file);
 
-    for (size_t i = 0; i < fs->numBlocks; ++i) {
+    for (size_t i = 0; i < NUM_BLOCKS; ++i) {
         printf("Block %zu - Header: %s,\n Data: \n%s\n", i, fs->blocks[i].header, fs->blocks[i].data);
     }
 
@@ -75,7 +48,6 @@ struct Filesystem initFileSystem() {
     const char* fileName = "fs.bin";
 
     struct Filesystem fs;
-    initBlocks(&fs);
 
     FILE* file = fopen(fileName, "wb");
     if (!file) {
@@ -83,7 +55,13 @@ struct Filesystem initFileSystem() {
         return fs;
     }
 
-    fwrite(fs.blocks, sizeof(struct Block), fs.numBlocks, file);
+    for (size_t i = 0; i < NUM_BLOCKS; ++i) {
+        fs.blocks[i].free = 1;
+        fs.blocks[i].size = sizeof(struct Block);
+        memset(fs.blocks[i].header, 0, sizeof(fs.blocks[i].header));
+        memset(fs.blocks[i].data, 0, sizeof(fs.blocks[i].data));
+        fwrite(&fs.blocks[i], sizeof(struct Block), 1, file);
+    }
 
     fclose(file);
 
@@ -91,15 +69,8 @@ struct Filesystem initFileSystem() {
 }
 
 void createFile(struct Filesystem* fs, const char* filePath, const char* fileData) {
-    for (size_t i = 0; i < fs->numBlocks; ++i) {
+    for (size_t i = 0; i < NUM_BLOCKS; ++i) {
         if (fs->blocks[i].free) {
-            int requiredBlocks = (strlen(fileData) + sizeof(struct Block) - 1) / sizeof(struct Block);
-
-            if (requiredBlocks > fs->numBlocks) {
-                int newSize = requiredBlocks * 2;
-                expandFileSystem(fs, newSize);
-            }
-
             strncpy(fs->blocks[i].header, filePath, HEADER_SIZE - 1);
             fs->blocks[i].header[HEADER_SIZE - 1] = '\0';
 
@@ -118,7 +89,7 @@ void createFile(struct Filesystem* fs, const char* filePath, const char* fileDat
 }
 
 void deleteFile(struct Filesystem* fs, const char* filePath) {
-    for (size_t i = 0; i < fs->numBlocks; ++i) {
+    for (size_t i = 0; i < NUM_BLOCKS; ++i) {
         if (!fs->blocks[i].free && strcmp(fs->blocks[i].header, filePath) == 0) {
             memset(fs->blocks[i].header, 0, sizeof(fs->blocks[i].header));
             memset(fs->blocks[i].data, 0, sizeof(fs->blocks[i].data));
@@ -136,7 +107,7 @@ void deleteFile(struct Filesystem* fs, const char* filePath) {
 
 void copyFile(struct Filesystem* fs, const char* sourcePath, const char* destinationPath) {
     int sourceIndex = -1;
-    for (size_t i = 0; i < fs->numBlocks; ++i) {
+    for (size_t i = 0; i < NUM_BLOCKS; ++i) {
         if (!fs->blocks[i].free && strcmp(fs->blocks[i].header, sourcePath) == 0) {
             sourceIndex = i;
             break;
@@ -149,7 +120,7 @@ void copyFile(struct Filesystem* fs, const char* sourcePath, const char* destina
     }
 
     int destinationIndex = -1;
-    for (size_t i = 0; i < fs->numBlocks; ++i) {
+    for (size_t i = 0; i < NUM_BLOCKS; ++i) {
         if (fs->blocks[i].free) {
             destinationIndex = i;
             break;
@@ -241,8 +212,6 @@ int main() {
 
     printf("\n\nAfter deletion:\n");
     readFromBinaryFile("fs.bin", &fs);
-
-    free(fs.blocks);
 
     return 0;
 }
