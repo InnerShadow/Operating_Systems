@@ -86,7 +86,7 @@ int allocateBlocks(Filesystem& fs, int numBlocks) {
                     fs.blocks[i + k].free = false;
                 }
                 fs.writeToBinaryFile("fs.bin");
-                i += numBlocks - 1;  // Увеличиваем i на количество занятых блоков
+                i += numBlocks - 1;
                 break;
             }
         }
