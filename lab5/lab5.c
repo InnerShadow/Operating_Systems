@@ -149,6 +149,26 @@ void moveFile(struct Filesystem* fs, const char* sourcePath, const char* destina
     deleteFile(fs, sourcePath);
 }
 
+
+void dumpFilesystem(const char* dumpFileName, struct Filesystem* fs) {
+    FILE* dumpFile = fopen(dumpFileName, "w");
+    if (!dumpFile) {
+        perror("Cannot open dump file for writing");
+        return;
+    }
+
+    for (size_t i = 0; i < NUM_BLOCKS; ++i) {
+        int freeBytes = fs->blocks[i].size - (strlen(fs->blocks[i].header) + strlen(fs->blocks[i].data));
+
+        fprintf(dumpFile, "Block %zu - Size: %d\n", i, fs->blocks[i].size);
+        fprintf(dumpFile, "  Header: %s\n", fs->blocks[i].header);
+        fprintf(dumpFile, "  Data:\n%s\n", fs->blocks[i].data);
+        fprintf(dumpFile, "  Free Bytes: %d\n", freeBytes);
+    }
+
+    fclose(dumpFile);
+}
+
 int main() {
     struct Filesystem fs = initFileSystem();
 
@@ -212,6 +232,8 @@ int main() {
 
     printf("\n\nAfter deletion:\n");
     readFromBinaryFile("fs.bin", &fs);
+
+    dumpFilesystem("filesystem_dump.txt", &fs);
 
     return 0;
 }
