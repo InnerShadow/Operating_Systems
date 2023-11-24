@@ -6,10 +6,10 @@
 #define NUM_BLOCKS 25
 
 struct Block {
-    int size;
-    int free;
     char header[HEADER_SIZE];
     char data[FILE_DATA_SIZE];
+    int size;
+    int free;
 };
 
 struct Filesystem {
@@ -19,7 +19,7 @@ struct Filesystem {
 void writeToBinaryFile(const char* fileName, struct Filesystem* fs) {
     FILE* file = fopen(fileName, "wb");
     if (!file) {
-        perror("Cannot open file for writing");
+        fprintf(stderr, "Cannot open file\n");
         return;
     }
 
@@ -31,7 +31,7 @@ void writeToBinaryFile(const char* fileName, struct Filesystem* fs) {
 void readFromBinaryFile(const char* fileName, struct Filesystem* fs) {
     FILE* file = fopen(fileName, "rb");
     if (!file) {
-        perror("Cannot open file for reading");
+        fprintf(stderr, "Cannot open file\n");
         return;
     }
 
@@ -44,14 +44,14 @@ void readFromBinaryFile(const char* fileName, struct Filesystem* fs) {
     fclose(file);
 }
 
-struct Filesystem initFileSystem() {
-    const char* fileName = "fs.bin";
+            struct Filesystem initFileSystem() {
+                const char* fileName = "fs.bin";
 
     struct Filesystem fs;
 
     FILE* file = fopen(fileName, "wb");
     if (!file) {
-        perror("Cannot open file");
+        fprintf(stderr, "Cannot open file\n");
         return fs;
     }
 
@@ -149,11 +149,10 @@ void moveFile(struct Filesystem* fs, const char* sourcePath, const char* destina
     deleteFile(fs, sourcePath);
 }
 
-
 void dumpFilesystem(const char* dumpFileName, struct Filesystem* fs) {
     FILE* dumpFile = fopen(dumpFileName, "w");
     if (!dumpFile) {
-        perror("Cannot open dump file for writing");
+        fprintf(stderr, "Cannot open file\n");
         return;
     }
 
@@ -208,7 +207,7 @@ int main() {
     createFile(&fs, "/root/folder1/folder3/file3.txt",
                "Krabby Patty Recipe\n"
                "Ingredients:\n"
-               "- 1 lb Krabby Patty secret formula (shhh!)\n"
+               "- 1 lb Krabby Patty secret formula\n"
                "- Krabby Patty bun\n"
                "- Fresh lettuce\n"
                "- Tomato slices\n"
@@ -237,3 +236,4 @@ int main() {
 
     return 0;
 }
+
