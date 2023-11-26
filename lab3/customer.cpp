@@ -27,9 +27,9 @@ int main() {
         if (sem_trywait(semaphore) == 0) {
             int customerId = i;
             write(fifo, &customerId, sizeof(customerId));
-            std::cout << "Customer " << customerId << " takes a seat in the reception area." << std::endl;
+            std::cout << "Customer " << customerId << " takes a seat in the reception area." << "\n";
         } else {
-            std::cout << "------ No available chairs. Customer " << i << " leaves ------" << std::endl;
+            std::cout << "------ No available chairs. Customer " << i << " leaves ------" << "\n";
         }
 
         sleep(1);

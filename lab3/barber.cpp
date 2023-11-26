@@ -17,36 +17,35 @@ int main() {
 
     int shm_fd = shm_open(semaphoreName, O_CREAT | O_RDWR, 0666);
     if (shm_fd == -1) {
-        perror("shm_open");
-        exit(EXIT_FAILURE);
+        std::cout << "shm_open error" << "\n";
+        return 1;
     }
 
     if (ftruncate(shm_fd, sizeof(sem_t)) == -1) {
-        perror("ftruncate");
-        exit(EXIT_FAILURE);
+        std::cout << "ftruncate error" << "\n";
+        return 2;
     }
 
     sem_t *semaphore = (sem_t *)mmap(NULL, sizeof(sem_t), PROT_READ | PROT_WRITE, MAP_SHARED, shm_fd, 0);
     if (semaphore == MAP_FAILED) {
-        perror("mmap");
-        exit(EXIT_FAILURE);
+        std::cout << "mmap error" << "\n";
+        return 3;
     }
 
     sem_init(semaphore, 1, MAX_CHAIRS);
 
     int customerId;
     while (true) {
-
         int value = 0;
         sem_getvalue(semaphore, &value);
-        //std::cout << value << "\n";
+        //std::cout << " sem: " << value << "\n";
 
         if (value == MAX_CHAIRS){
             std::cout << "Barber is going to sleep." << "\n"; 
         }
 
         read(fifo, &customerId, sizeof(customerId));
-        std::cout << "Barber is cutting hair for Customer " << customerId << "." << std::endl;
+        std::cout << "Barber is cutting hair for Customer " << customerId << "." << "\n";
         sleep(4);
 
         sem_post(semaphore);
@@ -59,3 +58,4 @@ int main() {
 
     return 0;
 }
+

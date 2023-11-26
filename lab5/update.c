@@ -193,22 +193,24 @@ void copyFile(struct Filesystem* fs, const char* sourcePath, const char* destina
 
 void viewFile(struct Filesystem* fs, const char* filePath){
     struct Block* current = fs->head;
+    int find = 0;
 
     while(current != NULL){
         if(strcmp(current->header, filePath) == 0){
+            find = 1;
             printf("File Content for %s:\n", filePath);
 
             while(current != NULL && strcmp(current->header, filePath) == 0){
                 printf("%s", current->data);
                 current = current->next;
             }
-
-            return;
         }
         current = current->next;
     }
 
-    printf("File %s not found\n", filePath);
+    if(!find){
+        printf("File %s not found\n", filePath);
+    }
 }
 
 void listFiles(struct Filesystem* fs, const char* directory){
