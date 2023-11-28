@@ -1,86 +1,131 @@
 #include <iostream>
 #include <unistd.h>
 #include <fcntl.h>
-#include <sys/stat.h>
+#include <fstream>
 #include <semaphore.h>
-#include <sys/mman.h>
 #include <sys/wait.h>
+#include <sys/stat.h>
+#include <string>
+#include <vector>
 
-const char *fifoPath = "/tmp/barber_fifoP2";
-const char *semaphoreName = "/barber_semaphoreP2";
+const char* semaphoreName = "/barber_semaphoreP28";
+const char* mutexName = "/queue_mutexP28";
+const char* file_path = "queue.txt";
 
 const int MAX_CHAIRS = 5;
 
 void barberShopSimulation() {
-    int fifo = open(fifoPath, O_RDONLY);
+    sem_t* semaphore = sem_open(semaphoreName, O_CREAT, 0666, MAX_CHAIRS);
+    sem_t* mutex = sem_open(mutexName, O_CREAT, 0666, 1);
 
-    int shm_fd = shm_open(semaphoreName, O_CREAT | O_RDWR, 0666);
-    if (shm_fd == -1) {
-        std::cerr << "shm_open error" << std::endl;
+    if (semaphore == SEM_FAILED || mutex == SEM_FAILED) {
+        std::cout << "sem_open error" << std::endl;
         exit(EXIT_FAILURE);
     }
 
-    if (ftruncate(shm_fd, sizeof(sem_t)) == -1) {
-        std::cerr << "ftruncate error" << std::endl;
-        exit(EXIT_FAILURE);
-    }
+    int sleep_num = 0;
 
-    sem_t *semaphore = (sem_t *)mmap(NULL, sizeof(sem_t), PROT_READ | PROT_WRITE, MAP_SHARED, shm_fd, 0);
-    if (semaphore == MAP_FAILED) {
-        std::cerr << "mmap error" << std::endl;
-        exit(EXIT_FAILURE);
-    }
-
-    sem_init(semaphore, 1, MAX_CHAIRS);
-
-    int customerId;
     while (true) {
         int value = 0;
+
         sem_getvalue(semaphore, &value);
 
         if (value == MAX_CHAIRS) {
-            std::cout << "Barber is going to sleep." << std::endl;
+            std::cout << "Barber is going to sleep. Till end " << 2 * (10 - sleep_num) << " seconds" << std::endl;
             sleep(2);
+            sleep_num++;
+            if (sleep_num > 10) {
+                std::cout << "FINISHED\n";
+                break;
+            }
             continue;
         }
 
-        read(fifo, &customerId, sizeof(customerId));
-        std::cout << "Barber is cutting hair for Customer " << customerId << "." << std::endl;
+        sleep_num = 0;
+
+        sem_wait(mutex);
+
+        std::ifstream ifF(file_path);
+        if (!ifF.is_open()){
+            std::cout << "Cannot open file. Finish!\n";
+            break; 
+        }
+
+        std::string id = "";
+
+        std::vector<int> queue;
+
+        while (std::getline(ifF, id)) {
+            queue.push_back(std::stoi(id));
+        }
+
+        ifF.close();
+
+        std::ofstream ofF(file_path);
+        if (!ofF.is_open()) {
+            std::cout << "Cannot open file. Finish!\n";
+            break; 
+        }
+
+        for (std::size_t i = 1; i < queue.size(); ++i) {
+            ofF << std::to_string(queue.at(i)) << "\n";
+        }
+
+        ofF.close();
+
+        sem_post(mutex);
+
+        std::cout << "Barber is cutting hair for Customer " << queue.at(0) << "." << std::endl;
         sleep(4);
 
         sem_post(semaphore);
     }
 
-    close(fifo);
-    sem_destroy(semaphore);
-    munmap(semaphore, sizeof(sem_t));
-    shm_unlink(semaphoreName);
+    sem_close(semaphore);
+    sem_unlink(semaphoreName);
+    sem_close(mutex);
+    sem_unlink(mutexName);
 }
 
 void simulateCustomerArrivals() {
-    int fifo = open(fifoPath, O_WRONLY);
+    sem_t* semaphore = sem_open(semaphoreName, O_CREAT, 0666, MAX_CHAIRS);
+    sem_t* mutex = sem_open(mutexName, O_CREAT, 0666, 1);
 
-    int shm_fd = shm_open(semaphoreName, O_CREAT | O_RDWR, 0666);
-    if (shm_fd == -1) {
-        std::cerr << "shm_open error" << std::endl;
+    if (semaphore == SEM_FAILED || mutex == SEM_FAILED) {
+        std::cout << "sem_open error" << std::endl;
         exit(EXIT_FAILURE);
     }
 
-    sem_t *semaphore = (sem_t *)mmap(NULL, sizeof(sem_t), PROT_READ | PROT_WRITE, MAP_SHARED, shm_fd, 0);
-    if (semaphore == MAP_FAILED) {
-        std::cerr << "mmap error" << std::endl;
-        exit(EXIT_FAILURE);
-    }
+    pid_t main_pid = getpid();
 
     for (std::size_t i = 0; i <= 20; ++i) {
-        if (sem_trywait(semaphore) == 0) {
-            int customerId = i;
-            write(fifo, &customerId, sizeof(customerId));
-            std::cout << "Customer " << customerId << " takes a seat in the reception area." << std::endl;
-        } else {
-            std::cout << "------ No available chairs. Customer " << i << " leaves ------" << std::endl;
-        }
+        if (getpid() == main_pid) {
 
+            pid_t child_pid = fork();
+
+            if (child_pid == 0) {
+                if (sem_trywait(semaphore) == 0) {
+                    sem_wait(mutex);
+
+                    int customerId = i;
+                    std::cout << "P_id = " << getpid() << " Customer " << customerId << " takes a seat in the reception area." << std::endl;
+
+                    std::ofstream f(file_path, std::ios::app);
+                    if (!f.is_open()) {
+                        std::cout << "P_id = " << getpid() << " ------ No available chairs. Customer " << i << " leaves ------" << std::endl;
+                        continue;
+                    }
+
+                    f << std::to_string(i) << "\n";
+
+                    f.close();
+
+                    sem_post(mutex);
+                } else {
+                    std::cout << "P_id = " << getpid() << " ------ No available chairs. Customer " << i << " leaves ------" << std::endl;
+                }
+            }
+        }
         sleep(1);
         if (i > 7) {
             sleep(1);
@@ -90,21 +135,21 @@ void simulateCustomerArrivals() {
         }
     }
 
-    close(fifo);
-    sem_destroy(semaphore);
-    munmap(semaphore, sizeof(sem_t));
+    sem_close(semaphore);
+    sem_close(mutex);
 }
 
 int main() {
-    mkfifo(fifoPath, 0666);
-
     pid_t barber_pid = fork();
 
     if (barber_pid == 0) {
-        barberShopSimulation();
-    } else {
+        sleep(1);
         simulateCustomerArrivals();
+    } else {
+        barberShopSimulation();
     }
 
     return 0;
 }
+
+
