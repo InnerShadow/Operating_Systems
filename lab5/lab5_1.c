@@ -262,16 +262,27 @@ int main(void){
             "- 5 gallons water\n"
             "- Priming sugar for bottling\n");
 
+    deleteFile(&fs, "/root/folder1/file.txt");
+
+    createFile(&fs, "/root/folder1/fil___e.txt",
+            "Borscht Recipe\n"
+            "Ingredients:\n"
+            "- 500g meat (beef/pork)\n"
+            "- 2 potatoes\n"
+            "- 1 onion\n"
+            "- 2 beets\n"
+            "- 1 carrot\n"
+            "- 1/2 cabbage\n"
+            "- 2 tomatoes\n"
+            "- 3 tbsp tomato paste\n"
+            "- greens, salt, pepper to tasteAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\n");
+
     readFromBinaryFile("fs.bin", &fs);
 
-    deleteFile(&fs, "/root/folder1/folder3/file1.txt");
+    //deleteFile(&fs, "/root/folder1/folder3/file1.txt");
     readFromBinaryFile("fs.bin", &fs);
 
     viewFile(&fs, "/root/folder1/file.txt");
-
-    moveFile(&fs, "/root/folder1/file.txt", "/root/folder2/moved_file.txt");
-
-    copyFile(&fs, "/root/folder2/moved_file.txt", "/root/folder2/copied_file.txt");
 
     viewFile(&fs, "/root/folder2/copied_file.txt");
 

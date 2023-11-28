@@ -41,7 +41,9 @@ int main() {
         //std::cout << " sem: " << value << "\n";
 
         if (value == MAX_CHAIRS){
-            std::cout << "Barber is going to sleep." << "\n"; 
+            std::cout << "Barber is going to sleep." << "\n";
+            sleep(2);
+            continue;
         }
 
         read(fifo, &customerId, sizeof(customerId));
