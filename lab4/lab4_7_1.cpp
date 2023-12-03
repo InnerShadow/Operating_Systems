@@ -171,8 +171,9 @@ void JoinHelper(struct header* phStart, struct header* phEnd) {
 }
 
 struct header* JoinFreeBlocks(struct header* ph, HeaderIterator iterator) {
-    if (ph == nullptr || !ph->free)
+    if (ph == nullptr || !ph->free){
         return ph;
+    }
 
     struct header* next = iterator(ph);
 
@@ -204,7 +205,8 @@ void Free(void* p) {
 
 int main() {
     const std::size_t bufferSize = 1024;
-    char buffer[bufferSize];
+
+    void* buffer = std::malloc(bufferSize);
 
     Setup(buffer, bufferSize);
 

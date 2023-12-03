@@ -171,8 +171,9 @@ void JoinHelper(struct header* phStart, struct header* phEnd) {
 }
 
 struct header* JoinFreeBlocks(struct header* ph, HeaderIterator iterator) {
-    if (ph == nullptr || !ph->free)
+    if (ph == nullptr || !ph->free){
         return ph;
+    }
 
     struct header* next = iterator(ph);
 
