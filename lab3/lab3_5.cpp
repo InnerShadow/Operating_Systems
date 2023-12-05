@@ -19,6 +19,7 @@ std::string write_time = "";
 
 const int lim = 10;
 const double step = 0.1;
+const int n = 100000;
 
 class Point {
 private:
@@ -48,11 +49,19 @@ public:
 std::shared_ptr<Point> point = std::make_shared<Point>(0, 0);
 
 double f(double x) {
-    return std::exp(x * std::sin(x) * std::cos(x)) * std::cos(x) * std::pow(std::sin(x), 2) * std::cos(std::pow(x, 2)) * std::log(x) * x;
+    double h = (x - step) / n;
+    double sum = 0.0f;
+
+    for (std::size_t i = 0; i < n; ++i) {
+        double x_i = step + i * h;
+        sum += std::exp(x_i * std::sin(x_i) * std::cos(x_i)) * std::cos(x_i) * std::pow(std::sin(x_i), 2) * std::cos(std::pow(x_i, 2)) * std::log(x_i) * x_i;;
+    }
+
+    return sum;
 }
 
 void* do_cout(void* arg) {
-    for (double i = 0; i < lim; i += step) {
+    for (double i = step; i < lim; i += step) {
         pthread_mutex_lock(&count_mutex);
         point->set_x(i);
         point->set_y(f(i));
@@ -71,7 +80,7 @@ void* do_cout(void* arg) {
 }
 
 void* do_write(void* arg) {
-    for (std::size_t i = 0; i <= lim * (1 / step); ++i) {
+    for (std::size_t i = 0; i < lim * (1 / step); ++i) {
         pthread_mutex_lock(&write_mutex);
 
         std::ofstream f_data(data_file_path, std::ios::app);
@@ -98,7 +107,7 @@ void* do_write(void* arg) {
 }
 
 void* do_log(void* arg) {
-    for (std::size_t i = 0; i <= lim * (1 / step); ++i) {
+    for (std::size_t i = 0; i < lim * (1 / step); ++i) {
         pthread_mutex_lock(&log_mutex);
 
         std::ofstream f_log(log_file_path, std::ios::app);
