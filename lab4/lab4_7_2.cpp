@@ -2,7 +2,7 @@
 #include <climits>
 #include <vector>
 
-#define MIN_SEGMENT_SIZE 16
+#define MIN_SEGMENT_SIZE 4
 
 typedef struct header* (*HeaderIterator)(struct header*);
 
@@ -53,6 +53,8 @@ struct header* GetHeader(struct tail* ptail) {
 }
 
 struct header* GetNext(struct header* phead) {
+    std::cout << "getNext(" << phead << ')' << "\n";
+
     struct tail* ptail = GetTail(phead);
     if (ptail == EndTail) {
         return nullptr;
@@ -86,43 +88,43 @@ std::size_t ActualSize(struct header* ph, struct tail* pt) {
 }
 
 struct header* InitSegmentData(struct header* ph, std::size_t size) {
-    if (!ph->free || ph->actualSize < size) {
-        return nullptr;
+    if(!ph->free || ph->actualSize < size){
+        return NULL;
     }
-
+  
     std::size_t allSize = AllSize(size);
-
+  
     struct tail* ptEnd = GetTail(ph);
-
-    if (ph->actualSize <= allSize) {
+  
+    if(ph->actualSize <= allSize) {
         ph->free = 0;
         ptEnd->free = 0;
         return ph;
     }
-
+  
     std::size_t newSize = ph->actualSize - allSize;
-
-    if (newSize < MIN_SEGMENT_SIZE) {
+  
+    if(newSize < MIN_SEGMENT_SIZE) {
         ph->free = 0;
         ptEnd->free = 0;
         return ph;
     }
-
+  
     unsigned char* base = (unsigned char*)ptEnd;
     base -= allSize;
-
+  
     struct tail* ptStart = (struct tail*)base;
     ptStart->free = 1;
     ptStart->actualSize = ActualSize(ph, ptStart);
     ph->actualSize = ptStart->actualSize;
-
+  
     struct header* phEnd = (struct header*)(base + sizeof(struct tail));
     phEnd->free = 0;
     phEnd->actualSize = ActualSize(phEnd, ptEnd);
-
+    
     ptEnd->free = 0;
     ptEnd->actualSize = phEnd->actualSize;
-
+    
     return phEnd;
 }
 
@@ -136,8 +138,8 @@ void Setup(void* buf, std::size_t size) {
 void* Alloc(std::size_t size) {
     std::size_t allSize = AllSize(size);
     struct header* ph = StartHeader;
-    while (ph != nullptr) {
-        if (ph->free && (ph->actualSize >= allSize || ph->actualSize >= size)) {
+    while (ph != nullptr && (ph->actualSize >= allSize || ph->actualSize >= size)) {
+        if (ph->free) {
             unsigned char* base = (unsigned char*)InitSegmentData(ph, size);
             base += sizeof(struct header);
 
@@ -146,6 +148,8 @@ void* Alloc(std::size_t size) {
             return (void*)base;
         }
         ph = GetNext(ph);
+
+        std::cout << "\nNEXT: " << ph << "\n\n";
     }
 
     std::cout << "Allocation failed for " << size << " bytes." << std::endl;
@@ -171,18 +175,18 @@ void JoinHelper(struct header* phStart, struct header* phEnd) {
 }
 
 struct header* JoinFreeBlocks(struct header* ph, HeaderIterator iterator) {
-    if (ph == nullptr || !ph->free){
+    if(ph == NULL || !ph->free)
         return ph;
-    }
-
+  
     struct header* next = iterator(ph);
-
-    while (next != nullptr && next->free) {
+ 
+    while(next != NULL && next->free) {
         JoinHelper(ph, next);
 
         ph = next;
         next = iterator(ph);
     }
+  
     return ph;
 }
 
@@ -199,8 +203,10 @@ void Free(void* p) {
 
     std::cout << "Freed memory at address: " << p << std::endl;
 
-    ph = JoinFreeBlocks(ph, GetPrev);
-    JoinFreeBlocks(ph, GetNext);
+    ph = JoinFreeBlocks(ph, GetNext);
+    JoinFreeBlocks(ph, GetPrev);
+
+    StartHeader = ph;
 }
 
 template <typename T>
@@ -224,8 +230,6 @@ struct Allocator {
 };
 
 int main(void) {
-    std::size_t num_elements = 200;
-
     const std::size_t memSize = 1024 * 4;
 
     void* memoryBlock = std::malloc(memSize);
@@ -239,18 +243,33 @@ int main(void) {
 
     Allocator<int> allocator(&mySegment);
 
-    std::vector<int, Allocator<int>> vec(allocator);
+    auto p1 = allocator.allocate(1);
+    auto p2 = allocator.allocate(1);
+    auto p3 = allocator.allocate(1);
 
-    for (std::size_t i = 0; i < num_elements; ++i) {
-        vec.push_back((i + 20) * (10 + i) + (71 + i) * (141 + i));
-    }
+    *p1 = -1;
+    *p2 = -2;
+    *p3 = -3;
 
-    std::cout << "\nVec: ";
-    for (const int& value : vec) {
-        std::cout << value << " ";
-    }
-    std::cout << "\n\n";
+    std::cout << "\n\nAfter allegate)\n";
+    std::cout << "P1 = " << p1 << " p2 = " << p2 << " p3 = " << p3 << "\n";
+    std::cout << "value p1 = " << *p1 << " p2 = " << *p2 << " p3 = " << *p3 << "\n";
+
+    allocator.deallocate(p2, 1);
+
+    std::cout << "\n\nAfter deallegate)\n";
+    std::cout << "P1 = " << p1 << " p2 = " << p2 << " p3 = " << p3 << "\n";
+    std::cout << "value p1 = " << *p1 << " p2 = " << *p2 << " p3 = " << *p3 << "\n";
+
+    auto p4 = allocator.allocate(1);
+
+    *p4 = -4;
+
+    std::cout << "\n\nAfter additional allegate)\n";
+    std::cout << "P1 = " << p1 << " p2 = " << p2 << " p3 = " << p3 << " p4 = " << p4 << "\n";
+    std::cout << "value p1 = " << *p1 << " p2 = " << *p2 << " p3 = " << *p3 << " p4 = " << *p4 <<"\n";
 
     std::free(memoryBlock);
     return 0;
 }
+
