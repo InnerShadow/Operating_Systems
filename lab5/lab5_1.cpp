@@ -5,6 +5,7 @@
 #include <algorithm>
 #include <iterator>
 #include <set>
+#include <sstream>
 
 const int FILE_SIZE = 2048 * 10;
 const int BLOCK_DATA_SIZE = 10;
@@ -50,7 +51,7 @@ void createFile(const std::string& filePath, const std::string& fileData) {
             currentBlockId = it->id;
             it->free = false;
         } else {
-            currentBlockId = fs.list.back().id + BLOCK_DATA_SIZE + HEADER_SIZE;
+            currentBlockId = !fs.list.empty() ? fs.list.back().id + BLOCK_DATA_SIZE + HEADER_SIZE : BLOCK_DATA_SIZE + HEADER_SIZE;
             index newIndex = {currentBlockId, false};
             fs.list.push_back(newIndex);
         }
@@ -140,7 +141,7 @@ void readFile(const std::string& filePath) {
     }
 }
 
-void listFiles(const std::string& directory) {
+std::vector<std::string> listFiles(const std::string& directory) {
     std::cout << "LS of " << directory << ":\n";
     std::set<std::string> files;
 
@@ -150,20 +151,28 @@ void listFiles(const std::string& directory) {
         std::string header(HEADER_SIZE, '\0');
         binaryFile.read(&header[0], HEADER_SIZE);
 
-        size_t pos = header.find_last_of('/');
-        std::string fileDir = header.substr(0, pos + 1);
-
-        if (fileDir == directory) {
-            files.insert(header.substr(pos + 1));
+        size_t pos = header.find('/');
+        while (pos != std::string::npos) {
+            std::string fileDir = header.substr(0, pos + 1);
+            if (fileDir == directory) {
+                files.insert(header.substr(pos + 1));
+                break;
+            }
+            pos = header.find('/', pos + 1);
         }
     }
 
+    int i = 0;
+
     for (const auto& file : files) {
-        std::cout << file << "\n";
+        std::cout << ++i << ": " << file << "\n";
     }
 
     std::cout << "\n";
+    std::vector<std::string> ret(files.begin(), files.end());
+    return ret;
 }
+
 
 void moveFile(const std::string& oldPath, const std::string& newPath) {
     auto it = std::find_if(std::begin(fs.list), std::end(fs.list), [&](const index& idx) {
@@ -245,23 +254,147 @@ void copyFile(const std::string& sourcePath, const std::string& destinationPath)
     std::cout << "File '" << sourcePath << "' copied to '" << destinationPath << "' successfully.\n\n";
 }
 
+void writeIndexList() {
+    std::ofstream binaryFile(FSNAME, std::ios::binary | std::ios::out | std::ios::in);
+    if (binaryFile.is_open()) {
+        std::size_t indexListOffset = FILE_SIZE - 400;
+        binaryFile.seekp(indexListOffset);
+
+        for (const auto& idx : fs.list) {
+            binaryFile.write(reinterpret_cast<const char*>(&idx), sizeof(index));
+        }
+
+        binaryFile.close();
+    } else {
+        std::cout << "Error: Unable to open file '" << FSNAME << "' for writing.\n\n";
+    }
+}
+
+void readIndexList() {
+    std::ifstream binaryFile(FSNAME, std::ios::binary | std::ios::in);
+    if (binaryFile.is_open()) {
+        std::size_t indexListOffset = FILE_SIZE - 400;
+        binaryFile.seekg(indexListOffset);
+
+        fs.list.clear();
+
+        while (binaryFile.tellg() < FILE_SIZE) {
+            index idx;
+            binaryFile.read(reinterpret_cast<char*>(&idx), sizeof(index));
+            fs.list.push_back(idx);
+        }
+
+        binaryFile.close();
+    } else {
+        std::cout << "Error: Unable to open file '" << FSNAME <<  "' for reading.\n\n";
+    }
+}
+
 int main(void) {
-    init(FSNAME, FILE_SIZE);
+    bool b = false;
 
-    createFile("root/folder1/file1.txt", "file data. 1212))");
-    createFile("root/folder1/file2.txt", "file data. 1212 13 12)))))");
+    std::size_t chose = 0;
+    std::cout << "1 - init new file system;\n2 - load exsisting\n";
+    std::cin >> chose;
+    switch (chose) {
+        case (1) : {
+            init(FSNAME, FILE_SIZE);
+            break;
+        }
 
-    deleteFile("root/folder1/file1.txt");
+        case (2) : {
+            readIndexList();
+            break;
+        }
+    }
 
-    createFile("root/folder1/file4.txt", "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA");
+    std::cout << "\n";
 
-    readFile("root/folder1/file4.txt");
+    while (true) {
+        std::cout << "1 - create file;\n2 - delete file;\n3 - move file;\n4 - copy file;\n5 - read file;\n6 - ls;\n7 - quit\n";
+        std::cin >> chose;
+        
+        switch (chose) {
+            case (1) : {
+                std::string fName = "";
+                std::cout << "Enter file name: ";
+                std::cin >> fName;
 
-    listFiles("root/folder1/");
+                std::string fData = "";
+                std::cout << "Enter file data: ";
+                std::cin >> fData;
 
-    moveFile("root/folder1/file4.txt", "root/folder2/moved_file.txt");
+                createFile(fName, fData);
+                break;
+            }
 
-    copyFile("root/folder2/moved_file.txt", "root/copied_file.txt");
+            case (2) : {
+                std::cout << "Enter file num: \n"; 
+                std::vector<std::string> files = listFiles("root/");
+                int file = 0;
+                std::cin >> file;
+
+                deleteFile("root/" + files[file - 1]);
+                break;
+            }
+
+            case (3) : {
+                std::cout << "Enter file num: \n"; 
+                std::vector<std::string> files = listFiles("root/");
+                int file = 0;
+                std::cin >> file;
+
+                std::string newPath = "";
+                std::cout << "Enter new path: ";
+                std::cin >> newPath;
+                moveFile("root/" + files[file - 1], newPath);
+                break;
+            }
+
+            case (4) : {
+                std::cout << "Enter file num: \n"; 
+                std::vector<std::string> files = listFiles("root/");
+                int file = 0;
+                std::cin >> file;
+
+                std::string newPath = "";
+                std::cout << "Enter new file path: ";
+                std::cin >> newPath;
+                copyFile("root/" + files[file - 1], newPath);
+                break;
+            }
+
+            case (5) : {
+                std::cout << "Enter file num: \n"; 
+                std::vector<std::string> files = listFiles("root/");
+                int file = 0;
+                std::cin >> file;
+
+                readFile("root/" + files[file - 1]);
+                break;
+            }
+
+            case (6) : {
+                listFiles("root/");
+                break;
+            }
+
+            case (7) : {
+                std::cout << "Have a good day!\n";
+                b = true;
+            }
+
+            default : {
+                std::cout << "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAa\n";
+            }
+        }
+
+        if (b) {
+            break;
+        }
+    }
+
+    writeIndexList();
 
     return 0;
 }
