@@ -8,9 +8,9 @@
 #include <string>
 #include <vector>
 
-const char* semaphoreName = "/barber_semaphoreP28";
-const char* mutexName = "/queue_mutexP28";
-const char* file_path = "queue.txt";
+const char* semaphoreName = "/barber_semaphore";
+const char* mutexName = "/queue_mutex";
+const char* file_path = "/queue.txt";
 
 const int MAX_CHAIRS = 5;
 
