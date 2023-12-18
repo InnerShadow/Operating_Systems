@@ -1,7 +1,7 @@
 #include <iostream>
 #include <memory>
 
-constexpr std::size_t MIN_SEGMENT_SIZE = 4;
+const std::size_t MIN_SEGMENT_SIZE = 4;
 
 class Header {
 public:
