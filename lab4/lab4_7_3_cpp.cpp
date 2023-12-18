@@ -7,8 +7,8 @@ class Header {
 public:
     Header() = default;
 
-    unsigned char& GetFree() { return free; }  // Изменено здесь
-    std::size_t& GetActualSize() { return actualSize; }  // Изменено здесь
+    unsigned char& GetFree() { return free; }
+    std::size_t& GetActualSize() { return actualSize; }
 
 private:
     unsigned char free;
@@ -19,8 +19,8 @@ class Tail {
 public:
     Tail() = default;
 
-    unsigned char& GetFree() { return free; }  // Изменено здесь
-    std::size_t& GetActualSize() { return actualSize; }  // Изменено здесь
+    unsigned char& GetFree() { return free; } 
+    std::size_t& GetActualSize() { return actualSize; }
 
 private:
     unsigned char free;
